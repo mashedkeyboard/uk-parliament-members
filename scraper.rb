@@ -46,7 +46,7 @@ def scrape_list(url)
       identifier__dods: member.attr('Dods_Id'),
       identifier__pims: member.attr('Pims_Id'),
     }
-    ScraperWiki.save_sqlite([:id, :term], data)
+    ScraperWiki.save_sqlite([:id], data)
   end
 end
 
