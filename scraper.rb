@@ -24,6 +24,9 @@ end
 def scrape_list(url)
   noko = noko_for(url)
   noko.xpath('//Members/Member').each do |member|
+    email = member.xpath('Addresses/Address[@Type_Id="1"]/Email').text.to_s.split(';').first
+    email = member.xpath('Addresses/Address[@Type_Id="4"]/Email').text.to_s.split(';').first if email.to_s.empty?
+
     data = { 
       id: member.attr('Member_Id'),
       name: member.xpath('DisplayAs').text,
@@ -34,7 +37,7 @@ def scrape_list(url)
       party: member.xpath('Party').text,
       party_id: member.xpath('Party/@Id').text,
       constituency: member.xpath('MemberFrom').text,
-      email: member.xpath('Addresses/Address[@Type_Id="1"]/Email').text.to_s.split(';').first,
+      email: email,
       phone: member.xpath('Addresses/Address[@Type_Id="1"]/Phone').text,
       fax: member.xpath('Addresses/Address[@Type_Id="1"]/Fax').text,
       website: member.xpath('Addresses/Address[@Type_Id="6"]/Address1').text,
