@@ -37,7 +37,7 @@ def scrape_list(url)
       party: member.xpath('Party').text,
       party_id: member.xpath('Party/@Id').text,
       constituency: member.xpath('MemberFrom').text,
-      email: email,
+      email: email.to_s.gsub('mailto:','').strip,
       phone: member.xpath('Addresses/Address[@Type_Id="1"]/Phone').text,
       fax: member.xpath('Addresses/Address[@Type_Id="1"]/Fax').text,
       website: member.xpath('Addresses/Address[@Type_Id="6"]/Address1').text,
