@@ -24,8 +24,10 @@ end
 def scrape_list(url)
   noko = noko_for(url)
   noko.xpath('//Members/Member').each do |member|
-    email = member.xpath('Addresses/Address[@Type_Id="1"]/Email').text.to_s.split(';').first
-    email = member.xpath('Addresses/Address[@Type_Id="4"]/Email').text.to_s.split(';').first if email.to_s.empty?
+    email = member.xpath('Addresses//Email').map { |x| x.text.to_s.gsub('mailto:','') }.uniq.compact.
+      reject { |t| t.to_s.empty? || !t.to_s.include?('@') }.
+      sort_by { |e| e.include?('parliament.uk') ? -1 : 1 }.
+      join(' ; ')
 
     data = { 
       id: member.attr('Member_Id'),
@@ -38,14 +40,14 @@ def scrape_list(url)
       party_id: member.xpath('Party/@Id').text,
       constituency: member.xpath('MemberFrom').text,
       email: email.to_s.gsub('mailto:','').strip,
-      phone: member.xpath('Addresses/Address[@Type_Id="1"]/Phone').text,
-      fax: member.xpath('Addresses/Address[@Type_Id="1"]/Fax').text,
-      website: member.xpath('Addresses/Address[@Type_Id="6"][1]/Address1').text,
-      twitter: member.xpath('Addresses/Address[Type="Twitter"][1]/Address1').text,
-      facebook: member.xpath('Addresses/Address[Type="Facebook"]/Address1').text,
-      blog: member.xpath('Addresses/Address[Type="Blog"]/Address1').text,
-      youtube: member.xpath('Addresses/Address[Type="Youtube"]/Address1').text,
-      flickr: member.xpath('Addresses/Address[Type="Flickr"]/Address1').text,
+      phone: member.xpath('Addresses/Address[@Type_Id="1"]/Phone').map { |w| w.text }.join(" ; "),
+      fax: member.xpath('Addresses/Address[@Type_Id="1"]/Fax').map { |w| w.text }.join(" ; "),
+      website: member.xpath('Addresses/Address[@Type_Id="6"]/Address1').map { |w| w.text }.join(" ; "),
+      twitter: member.xpath('Addresses/Address[Type="Twitter"]/Address1').map { |w| w.text }.join(" ; "),
+      facebook: member.xpath('Addresses/Address[Type="Facebook"]/Address1').map { |w| w.text }.join(" ; "),
+      blog: member.xpath('Addresses/Address[Type="Blog"]/Address1').map { |w| w.text }.join(" ; "),
+      youtube: member.xpath('Addresses/Address[Type="Youtube"]/Address1').map { |w| w.text }.join(" ; "),
+      flickr: member.xpath('Addresses/Address[Type="Flickr"]/Address1').map { |w| w.text }.join(" ; "),
       identifier__dods: member.attr('Dods_Id'),
       identifier__pims: member.attr('Pims_Id'),
     }
