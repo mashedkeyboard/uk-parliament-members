@@ -55,4 +55,5 @@ def scrape_list(url)
   end
 end
 
+ScraperWiki.sqliteexecute('DROP TABLE data') rescue nil
 scrape_list('http://data.parliament.uk/membersdataplatform/services/mnis/members/query/House=Commons%7CIsEligible=true/Addresses/')
