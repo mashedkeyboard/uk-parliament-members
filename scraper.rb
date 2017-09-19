@@ -2,13 +2,11 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
-require 'scraperwiki'
 require 'nokogiri'
 require 'open-uri'
+require 'scraperwiki'
 
 require 'pry'
-require 'open-uri/cached'
-OpenURI::Cache.cache_path = '.cache'
 
 def noko_for(url)
   Nokogiri::XML(open(url).read)
@@ -23,13 +21,13 @@ end
 
 def scrape_list(url)
   noko = noko_for(url)
-  noko.xpath('//Members/Member').each do |member|
+  noko.xpath('//Members/Member').map do |member|
     email = member.xpath('Addresses//Email').map { |x| x.text.to_s.gsub('mailto:', '') }.uniq.compact
                   .reject { |t| t.to_s.empty? || !t.to_s.include?('@') }
                   .sort_by { |e| e.include?('parliament.uk') ? -1 : 1 }
                   .join(' ; ')
 
-    data = {
+    {
       id:               member.attr('Member_Id'),
       name:             member.xpath('DisplayAs').text,
       sort_name:        member.xpath('ListAs').text,
@@ -51,9 +49,11 @@ def scrape_list(url)
       identifier__dods: member.attr('Dods_Id'),
       identifier__pims: member.attr('Pims_Id'),
     }
-    ScraperWiki.save_sqlite([:id], data)
   end
 end
 
+data = scrape_list('http://data.parliament.uk/membersdataplatform/services/mnis/members/query/House=Commons%7CIsEligible=true/Addresses/')
+data.each { |mem| puts mem.reject { |_, v| v.to_s.empty? }.sort_by { |k, _| k }.to_h } if ENV['MORPH_DEBUG']
+
 ScraperWiki.sqliteexecute('DROP TABLE data') rescue nil
-scrape_list('http://data.parliament.uk/membersdataplatform/services/mnis/members/query/House=Commons%7CIsEligible=true/Addresses/')
+ScraperWiki.save_sqlite([:id], data)
