@@ -3,7 +3,7 @@
 # frozen_string_literal: true
 
 require 'nokogiri'
-require 'open-uri'
+require 'scraped'
 require 'scraperwiki'
 
 require 'pry'
@@ -22,7 +22,7 @@ end
 def scrape_list(url)
   noko = noko_for(url)
   noko.xpath('//Members/Member').map do |member|
-    email = member.xpath('Addresses//Email').map { |x| x.text.to_s.gsub('mailto:', '') }.uniq.compact
+    email = member.xpath('Addresses//Email').flat_map { |x| x.text.split(/[ ;]/) }.map { |e| e.tidy.gsub('mailto:','') }.uniq.compact
                   .reject { |t| t.to_s.empty? || !t.to_s.include?('@') }
                   .sort_by { |e| e.include?('parliament.uk') ? -1 : 1 }
                   .join(' ; ')
