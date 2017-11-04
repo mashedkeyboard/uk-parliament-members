@@ -22,7 +22,11 @@ end
 def scrape_list(url)
   noko = noko_for(url)
   noko.xpath('//Members/Member').map do |member|
-    email = member.xpath('Addresses//Email').flat_map { |x| x.text.split(/[ ;]/) }.map { |e| e.tidy.gsub('mailto:','') }.uniq.compact
+    email = member.xpath('Addresses/Address')
+                  .sort_by { |e| e.attr('Type_Id') }
+                  .flat_map { |e| e.xpath('.//Email') }
+                  .flat_map { |x| x.text.split(/[ ;]/) }
+                  .map { |e| e.tidy.gsub('mailto:','') }.uniq.compact
                   .reject { |t| t.to_s.empty? || !t.to_s.include?('@') }
                   .sort_by { |e| e.include?('parliament.uk') ? -1 : 1 }
                   .join(' ; ')
