@@ -32,7 +32,7 @@ def scrape_list(url)
                   .join(' ; ')
 
     {
-      id:               member.attr('Member_Id'),
+      identifier__datadotparl: member.attr('Member_Id'),
       name:             member.xpath('DisplayAs').text,
       sort_name:        member.xpath('ListAs').text,
       birth_date:       member.xpath('DateOfBirth').text.to_s.sub(/T.*/, ''),
